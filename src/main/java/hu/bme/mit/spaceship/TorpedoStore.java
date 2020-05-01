@@ -1,5 +1,6 @@
 package hu.bme.mit.spaceship;
 
+import java.security.SecureRandom;
 import java.util.Random;
 
 /**
@@ -9,9 +10,10 @@ import java.util.Random;
 */
 public class TorpedoStore {
 
+//eddig is minden jó volt, most is minden az.
   // rate of failing to fire torpedos [0.0, 1.0]
   private double FAILURE_RATE = 0.0; //NOSONAR
-
+  Random rand;
   private int torpedoCount = 0;
 
   public TorpedoStore(int numberOfTorpedos){
@@ -21,8 +23,9 @@ public class TorpedoStore {
     String failureEnv = System.getenv("IVT_RATE");
     if (failureEnv != null){
       try {
+        rand = SecureRandom.getInstanceStrong();
         FAILURE_RATE = Double.parseDouble(failureEnv);
-      } catch (NumberFormatException nfe) {
+      } catch (Exception nfe) {
         FAILURE_RATE = 0.0;
       }
     }
@@ -30,18 +33,17 @@ public class TorpedoStore {
 
   public boolean fire(int numberOfTorpedos){
     if(numberOfTorpedos < 1 || numberOfTorpedos > this.torpedoCount){
-      new IllegalArgumentException("numberOfTorpedos");
+      throw new IllegalArgumentException("numberOfTorpedos");
     }
 
     boolean success = false;
 
     // simulate random overheating of the launcher bay which prevents firing
-    Random generator = new Random();
-    double r = generator.nextDouble();
+    double r = rand.nextDouble(); 
 
     if (r >= FAILURE_RATE) {
       // successful firing
-      this.torpedoCount =- numberOfTorpedos;
+      this.torpedoCount -= numberOfTorpedos;
       success = true;
     } else {
       // simulated failure
